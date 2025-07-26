@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+</head>
+<body>
+    
+    <!--說明:套用了Sortable 差鍵。
+詳情:https://github.com/SortableJS/Sortable#cdn  -->
+
+<!--下一步更新: 加入Bst5， 美化畫面。加入番茄鐘。加入會員存資料(?)
+  -->
+
+<div id="app">
+  <div class="controls">
+    <input v-model="newTask" placeholder="輸入點子..." @keyup.enter="addTask" />
+    <button @click="addTask">輸入點子</button>
+    <button @click="clearCompleted">刪除已完成</button>
+  </div>
+
+  <div class="board">
+    <div v-for="(tasks, listName) in lists" :key="listName" class="list">
+      <h3>{{ listTitles[listName] }}</h3>
+      <ul :ref="el => setSortable(el, listName)">
+        <li v-for="(task, index) in tasks" :key="task.id">
+          <label>
+            <input type="checkbox" v-model="task.done" />
+            <span :class="{ done: task.done }">{{ task.text }}</span>
+          </label>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+    <script src="index.js"></script>
+</body>
+</html>
