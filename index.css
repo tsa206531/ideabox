@@ -156,6 +156,45 @@ body {
   color: #2c2c2c;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.list-title:hover {
+  background: #f1f1ef;
+}
+
+.list-title-input {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 2px solid #2383e2;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: white;
+  outline: none;
+  min-width: 120px;
+}
+
+.list-delete-btn {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.list-delete-btn:hover {
+  opacity: 1;
+  background: #ffebee;
+  transform: scale(1.1);
 }
 
 .list-count {
