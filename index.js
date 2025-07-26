@@ -10,12 +10,19 @@ createApp({
       done: []
     });
 
-    const listTitles = {
+    const listTitles = ref({
       ideabox: "想法收集箱",
       urgent: "緊急任務",
       important: "重要任務",
       done: "已完成"
-    };
+    });
+
+    // 記錄哪些列表正在編輯
+    const editingList = ref({});
+    const tempTitle = ref("");
+
+    // 預設列表（不能刪除）
+    const defaultLists = ['ideabox', 'urgent', 'important', 'done'];
 
     const addTask = async () => {
       const text = newTask.value.trim();
@@ -50,7 +57,7 @@ createApp({
       if (completedCount > 0) {
         // Clear all tasks from done list
         lists.value.done.splice(0, lists.value.done.length);
-
+        
         // Show feedback
         const button = document.querySelector('.btn-secondary');
         button.style.background = '#95e1d3';
@@ -62,24 +69,75 @@ createApp({
       }
     };
 
-    const handleTaskToggle = async (task, currentList) => {
+    // 任務打勾不會自動移動，需要手動拖拽
+    const handleTaskToggle = (task, currentList) => {
+      // 只更新任務狀態，不自動移動
+    };
+
+    // 開始編輯列表標題
+    const startEditTitle = async (listName) => {
+      editingList.value[listName] = true;
+      tempTitle.value = listTitles.value[listName];
       await nextTick();
+      // 自動聚焦到輸入框
+      const inputs = document.querySelectorAll('.list-title-input');
+      if (inputs.length > 0) {
+        inputs[inputs.length - 1].focus();
+        inputs[inputs.length - 1].select();
+      }
+    };
+
+    // 完成編輯標題
+    const finishEditTitle = (listName) => {
+      const newTitle = tempTitle.value.trim();
+      if (newTitle) {
+        listTitles.value[listName] = newTitle;
+      }
+      editingList.value[listName] = false;
+    };
+
+    // 取消編輯標題
+    const cancelEditTitle = (listName) => {
+      editingList.value[listName] = false;
+      tempTitle.value = "";
+    };
+
+    // 新增收集盒
+    const addNewList = () => {
+      const listName = `custom_${Date.now()}`;
+      const listTitle = `新收集盒 ${Object.keys(lists.value).length}`;
       
-      if (task.done && currentList !== 'done') {
-        // Move completed task to done list
-        const taskIndex = lists.value[currentList].indexOf(task);
-        if (taskIndex > -1) {
-          lists.value[currentList].splice(taskIndex, 1);
-          lists.value.done.push(task);
+      lists.value[listName] = [];
+      listTitles.value[listName] = listTitle;
+      editingList.value[listName] = false;
+      
+      // 立即編輯新的收集盒名稱
+      setTimeout(() => {
+        startEditTitle(listName);
+      }, 100);
+    };
+
+    // 刪除收集盒
+    const removeList = (listName) => {
+      if (!isDefaultList(listName)) {
+        const taskCount = lists.value[listName].length;
+        let confirmDelete = true;
+        
+        if (taskCount > 0) {
+          confirmDelete = confirm(`此收集盒內有 ${taskCount} 個任務，確定要刪除嗎？`);
         }
-      } else if (!task.done && currentList === 'done') {
-        // Move uncompleted task back to ideabox
-        const taskIndex = lists.value.done.indexOf(task);
-        if (taskIndex > -1) {
-          lists.value.done.splice(taskIndex, 1);
-          lists.value.ideabox.push(task);
+        
+        if (confirmDelete) {
+          delete lists.value[listName];
+          delete listTitles.value[listName];
+          delete editingList.value[listName];
         }
       }
+    };
+
+    // 檢查是否為預設列表
+    const isDefaultList = (listName) => {
+      return defaultLists.includes(listName);
     };
 
     const setSortable = (el, listName) => {
@@ -113,7 +171,7 @@ createApp({
           if (fromList && toList) {
             const movedItem = fromList.splice(evt.oldIndex, 1)[0];
             if (movedItem) {
-              // Update task status based on destination
+              // 根據目標列表更新任務狀態
               if (toListName === 'done') {
                 movedItem.done = true;
               } else if (fromListName === 'done') {
@@ -164,7 +222,8 @@ createApp({
       if (saved) {
         try {
           const data = JSON.parse(saved);
-          lists.value = { ...lists.value, ...data };
+          if (data.lists) lists.value = { ...lists.value, ...data.lists };
+          if (data.listTitles) listTitles.value = { ...listTitles.value, ...data.listTitles };
         } catch (e) {
           console.log('Could not load saved data');
         }
@@ -173,7 +232,10 @@ createApp({
 
     // Save data to localStorage
     const saveData = () => {
-      localStorage.setItem('taskBoard', JSON.stringify(lists.value));
+      localStorage.setItem('taskBoard', JSON.stringify({
+        lists: lists.value,
+        listTitles: listTitles.value
+      }));
     };
 
     // Auto-save when lists change
@@ -190,9 +252,17 @@ createApp({
       newTask,
       lists,
       listTitles,
+      editingList,
+      tempTitle,
       addTask,
       clearCompleted,
       handleTaskToggle,
+      startEditTitle,
+      finishEditTitle,
+      cancelEditTitle,
+      addNewList,
+      removeList,
+      isDefaultList,
       setSortable,
       getEmptyStateIcon,
       getEmptyStateText
