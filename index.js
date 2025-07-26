@@ -48,8 +48,9 @@ createApp({
     const clearCompleted = () => {
       const completedCount = lists.value.done.length;
       if (completedCount > 0) {
-        lists.value.done = [];
-        
+        // Clear all tasks from done list
+        lists.value.done.splice(0, lists.value.done.length);
+
         // Show feedback
         const button = document.querySelector('.btn-secondary');
         button.style.background = '#95e1d3';
