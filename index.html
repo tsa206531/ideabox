@@ -16,11 +16,11 @@
         </div>
 
         <div class="controls">
-            <input 
-                v-model="newTask" 
+            <input
+                v-model="newTask"
                 class="task-input"
-                placeholder="💭 輸入你的新想法或任務..." 
-                @keyup.enter="addTask" 
+                placeholder="💭 輸入你的新想法或任務..."
+                @keyup.enter="addTask"
             />
             <button @click="addTask" class="btn btn-primary">
                 <span>➕</span>
@@ -29,6 +29,10 @@
             <button @click="clearCompleted" class="btn btn-secondary">
                 <span>🗑️</span>
                 清除已完成
+            </button>
+            <button @click="addNewList" class="btn btn-secondary">
+                <span>📝</span>
+                新增收集盒
             </button>
         </div>
 
@@ -41,8 +45,32 @@
             >
                 <div class="list-header">
                     <div class="list-icon"></div>
-                    <h3 class="list-title">{{ listTitles[listName] }}</h3>
+                    <h3
+                        v-if="!editingList[listName]"
+                        class="list-title"
+                        @click="startEditTitle(listName)"
+                        title="點擊編輯名稱"
+                    >
+                        {{ listTitles[listName] }}
+                    </h3>
+                    <input
+                        v-else
+                        v-model="tempTitle"
+                        class="list-title-input"
+                        @blur="finishEditTitle(listName)"
+                        @keyup.enter="finishEditTitle(listName)"
+                        @keyup.esc="cancelEditTitle(listName)"
+                        ref="titleInput"
+                    />
                     <span class="list-count">{{ tasks.length }}</span>
+                    <button
+                        v-if="!isDefaultList(listName)"
+                        @click="removeList(listName)"
+                        class="list-delete-btn"
+                        title="刪除收集盒"
+                    >
+                        ❌
+                    </button>
                 </div>
                 
                 <ul class="task-list" :ref="el => setSortable(el, listName)">
